@@ -1,0 +1,30 @@
+drop table if exists scott;
+
+create table scott (
+  inventroy_id int,
+  title varchar, 
+  times_rented int,
+  rent_date date
+); 
+
+insert into scott 
+select r.inventory_id, f.title, count(r.inventory_id)
+from rental r
+inner join inventory i on r.inventory_id = i.inventory_id
+inner join film f on i.film_id = f.film_id
+
+group by r.inventory_id, f.title
+having count(r.inventory_id) < 2;
+
+update scott
+set rent_date = 
+(select r.rental_date
+  from rental r
+  inner join scott s 
+  on r.inventory_id = s.inventory_id
+  where s.inventory_id = 2662)
+where inventory_id = 2662
+;
+
+
+select * from scott;
