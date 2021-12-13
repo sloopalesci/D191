@@ -1,30 +1,88 @@
-drop table if exists scott;
+/*drop table if exists bottom25;
 
-create table scott (
-  inventroy_id int,
-  title varchar, 
-  times_rented int,
-  rent_date date
-); 
+-- Create the table to insert the data
+create table bottom25 (
+	
+	customer_id int,
+	full_name varchar,
+	num_rentals int,
+	email varchar
+	
+);
 
-insert into scott 
-select r.inventory_id, f.title, count(r.inventory_id)
+-- Select the 25 least active customers for targeted marketing
+insert into bottom25
+select r.customer_id, c.first_name, count(r.customer_id), c.email
 from rental r
-inner join inventory i on r.inventory_id = i.inventory_id
-inner join film f on i.film_id = f.film_id
 
-group by r.inventory_id, f.title
-having count(r.inventory_id) < 2;
+inner join customer c on r.customer_id = c.customer_id
 
-update scott
-set rent_date = 
-(select r.rental_date
-  from rental r
-  inner join scott s 
-  on r.inventory_id = s.inventory_id
-  where s.inventory_id = 2662)
-where inventory_id = 2662
-;
+group by r.customer_id, c.first_name, c.email
+order by count asc
+limit 25;
+
+select * from bottom25;
+
+--create the table for the trigger function
+create table email_updates(
+	customer_id int,
+	old_email varchar,
+	new_email varchar,
+	first_name varchar
+);
+
+-- Create the trigger function to update the email 
+create or replace function update_email()
+	returns trigger 
+	language plpgsql
+	as
+$BODY$
+	begin
+		if NEW.email <> OLD.email then
+		insert into email_updates 
+		values(old.id, old.email, new.email, old.first_name);
+	end if;
+	return new;
+	end;
+$BODY$
 
 
-select * from scott;
+-- Create the trigger
+create trigger email_updater
+before update
+on customer
+for each row
+execute procedure update_email();
+
+-- create a procedure that automatically generates the bottom 25
+CREATE PROCEDURE public.insert_bottom_25()
+LANGUAGE 'plpgsql'
+AS $BODY$
+begin
+
+drop table if exists bottom25;
+
+-- Create the table to insert the data
+create table bottom25 (
+	
+	customer_id int,
+	full_name varchar,
+	num_rentals int,
+	email varchar
+	
+);
+insert into bottom25
+select r.customer_id, c.first_name, count(r.customer_id), c.email
+from rental r
+
+inner join customer c on r.customer_id = c.customer_id
+
+group by r.customer_id, c.first_name, c.email
+order by count asc
+limit 25;
+commit;
+end;
+$BODY$;
+
+call insert_bottom_25();
+*/
