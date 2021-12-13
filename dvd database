@@ -1,4 +1,4 @@
-/*drop table if exists bottom25;
+drop table if exists bottom25;
 
 -- Create the table to insert the data
 create table bottom25 (
@@ -85,4 +85,4 @@ end;
 $BODY$;
 
 call insert_bottom_25();
-*/
+
