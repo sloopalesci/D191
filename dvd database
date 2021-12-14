@@ -1,27 +1,60 @@
-drop table if exists bottom25;
+-- create a procedure that automatically generates the reports
+CREATE OR REPLACE PROCEDURE public.create_reports()
+LANGUAGE 'plpgsql'
+AS $BODY$
+begin
+
+drop table if exists detailed_report;
 
 -- Create the table to insert the data
-create table bottom25 (
+create table detailed_report (
 	
 	customer_id int,
-	full_name varchar,
+	first_name varchar,
+	last_name varchar,
 	num_rentals int,
-	email varchar
+	email varchar,
+	address varchar,
+	address2 varchar,
+	city varchar,
+	postal_code varchar,
+	phone varchar
 	
 );
-
--- Select the 25 least active customers for targeted marketing
-insert into bottom25
-select r.customer_id, c.first_name, count(r.customer_id), c.email
+insert into detailed_report
+select r.customer_id, c.first_name, c.last_name, count(r.customer_id), 
+		c.email, a.address, a.address2, city.city, a.postal_code, a.phone
 from rental r
 
 inner join customer c on r.customer_id = c.customer_id
+inner join address a on c.address_id = a.address_id
+inner join city on a.city_id = city.city_id
 
-group by r.customer_id, c.first_name, c.email
+group by r.customer_id, c.first_name, c.last_name, c.email, a.address, a.address2, city.city, a.postal_code, a.phone
 order by count asc
 limit 25;
 
-select * from bottom25;
+drop table if exists summary_report;
+create table summary_report (
+	full_name varchar,
+	email varchar
+);
+
+insert into summary_report
+select concat(first_name, ' ', last_name) as full_name, email 
+from detailed_report;
+commit;
+end;
+$BODY$;
+
+call create_reports();
+
+-- ***************
+
+
+
+
+
 
 --create the table for the trigger function
 create table email_updates(
@@ -54,35 +87,5 @@ on customer
 for each row
 execute procedure update_email();
 
--- create a procedure that automatically generates the bottom 25
-CREATE PROCEDURE public.insert_bottom_25()
-LANGUAGE 'plpgsql'
-AS $BODY$
-begin
 
-drop table if exists bottom25;
-
--- Create the table to insert the data
-create table bottom25 (
-	
-	customer_id int,
-	full_name varchar,
-	num_rentals int,
-	email varchar
-	
-);
-insert into bottom25
-select r.customer_id, c.first_name, count(r.customer_id), c.email
-from rental r
-
-inner join customer c on r.customer_id = c.customer_id
-
-group by r.customer_id, c.first_name, c.email
-order by count asc
-limit 25;
-commit;
-end;
-$BODY$;
-
-call insert_bottom_25();
 
