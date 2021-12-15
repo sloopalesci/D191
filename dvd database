@@ -48,8 +48,6 @@ commit;
 end;
 $BODY$;
 
-call create_reports();
-
 -- ***************
 
 -- Create the trigger function to update the email on the summary report when the detailed is updated
@@ -66,6 +64,8 @@ $BODY$
 $BODY$
 language plpgsql
 
+-- Create the report
+call create_reports();
 
 -- Create the trigger
 create or replace trigger email_updater
@@ -74,7 +74,10 @@ on detailed_report
 for each row
 execute procedure update_email();
 
+
+
 -- manually update an email on the detailed report
 update detailed_report
 set email = 'salesci@wgu.edu'
 where customer_id = 318;
+
