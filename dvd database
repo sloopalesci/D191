@@ -1,4 +1,5 @@
 -- create a procedure that automatically generates the reports
+-- To run the procedure, on the first day of the quarter, simply query "call create_reports();"
 CREATE OR REPLACE PROCEDURE public.create_reports()
 LANGUAGE 'plpgsql'
 AS $BODY$
@@ -22,8 +23,8 @@ create table detailed_report (
 	
 );
 insert into detailed_report
-select r.customer_id, c.first_name, c.last_name, count(r.customer_id), 
-		c.email, a.address, a.address2, city.city, a.postal_code, a.phone
+select r.customer_id, c.first_name, c.last_name, count(r.customer_id) as number_of_rentals, 
+		UPPER(c.email) as email, a.address, a.address2, city.city, a.postal_code, a.phone
 from rental r
 
 inner join customer c on r.customer_id = c.customer_id
@@ -31,7 +32,7 @@ inner join address a on c.address_id = a.address_id
 inner join city on a.city_id = city.city_id
 
 group by r.customer_id, c.first_name, c.last_name, c.email, a.address, a.address2, city.city, a.postal_code, a.phone
-order by count asc
+order by number_of_rentals asc
 limit 25;
 
 drop table if exists summary_report;
@@ -51,41 +52,29 @@ call create_reports();
 
 -- ***************
 
-
-
-
-
-
---create the table for the trigger function
-create table email_updates(
-	customer_id int,
-	old_email varchar,
-	new_email varchar,
-	first_name varchar
-);
-
--- Create the trigger function to update the email 
+-- Create the trigger function to update the email on the summary report when the detailed is updated
 create or replace function update_email()
 	returns trigger 
-	language plpgsql
 	as
 $BODY$
 	begin
-		if NEW.email <> OLD.email then
-		insert into email_updates 
-		values(old.id, old.email, new.email, old.first_name);
-	end if;
+		update summary_report
+		set email = upper(new.email)
+		where email = old.email;
 	return new;
 	end;
 $BODY$
+language plpgsql
 
 
 -- Create the trigger
-create trigger email_updater
+create or replace trigger email_updater
 before update
-on customer
+on detailed_report
 for each row
 execute procedure update_email();
 
-
-
+-- manually update an email on the detailed report
+update detailed_report
+set email = 'salesci@wgu.edu'
+where customer_id = 318;
