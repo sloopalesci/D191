@@ -1,38 +1,6 @@
 # D191
 WGU Advanced Data Management 
 
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@sloopalesci 
-sloopalesci
-/
-D191
-Public
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-D191/Submission Requirements
-@sloopalesci
-sloopalesci Code complete. Ready to submit!!!
-Latest commit 7a1b56d on Dec 14, 2021
- History
- 1 contributor
-88 lines (58 sloc)  6.21 KB
-
-Submission Requirements
-
-
 √ The submission accurately and completely summarizes 1 real-world business report created from the chosen dataset.
 
 √ The submission accurately and completely describes the data that will be used in the report.
