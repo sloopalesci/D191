@@ -1,5 +1,6 @@
 # D191
-WGU Advanced Data Management 
+Advanced Data Management 
+Here are the requirements of the project
 
 √ The submission accurately and completely summarizes 1 real-world business report created from the chosen dataset.
 
